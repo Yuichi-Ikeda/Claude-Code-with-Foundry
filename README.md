@@ -29,7 +29,7 @@ sequenceDiagram
 
 ## 構築手順
 
-本資料では完全なデプロイ手順ではなく、Entra ID 構成の重要な部分を中心に記載しています。そのため Microsoft Foundry や Azure API Management のデプロイ手順や基本機能の説明などは省略しています。
+本資料では完全なデプロイ手順ではなく、Entra ID 構成の重要な部分を中心に記載しています。そのため Microsoft Foundry や Azure API Management のデプロイ手順や基本機能の説明などは省略しています。構築途中で期待した動作をしない場合は、巻末に`トラブルシューティングの手法`を掲載しています。
 
 > [!NOTE]
 > 本資料は 2026-09-14 時点のポータル画面を元に作成されています。画面や選択肢は更新されることがあります。表記が画像と異なる場合は、同じ意味の最新の項目を選択してください。将来的には bicep による IaC コードの提供を予定しています。
@@ -184,7 +184,7 @@ Entra ID 認証と既存のキー認証（サブスクリプションキー）�
 {
   "apiKeyHelper": "az account get-access-token --tenant TENANT_ID --scope api://API_APP_ID/Claude.Invoke --query accessToken --output tsv --only-show-errors",
   "env": {
-    "ANTHROPIC_BASE_URL": "https://<API Management>.azure-api.net/<API Name>anthropic",
+    "ANTHROPIC_BASE_URL": "https://<API_Management>.azure-api.net/<API_Name>/anthropic",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "<Sonnet のデプロイ名>",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "<Opus のデプロイ名>",
     "CLAUDE_CODE_API_KEY_HELPER_TTL_MS": "240000"
@@ -196,8 +196,8 @@ Entra ID 認証と既存のキー認証（サブスクリプションキー）�
 | --------------- | -------------- |
 | TENANT_ID　| ディレクトリ (テナント) ID `GUID` |
 | API_APP_ID　| アプリケーション (クライアント) ID `GUID` |
-| API Management | 以下の画像の URL 参照 |
-| API Name | 以下の画像の URL 参照 |
+| API_Management | 以下の画像の URL 参照 |
+| API_Name | 以下の画像の URL 参照 |
 
 ![ANTHROPIC_BASE_URL](/images/013.png)
 
@@ -226,16 +226,22 @@ claude
 
 ### 1. アクセス トークンの取得と確認
 
-以下を PowerShell で実行し、アクセス トークンを取得・確認します。
+Entra ID に登録したアプリケーションの設定を変更した場合には `az account clear` を実施し、キャッシュされた認証トークンをクリア後に `az login` をする事で、設定変更が反映された新しい認証トークンの取得が可能となります。
+
+以下を PowerShell で実行し、キャッシュされた認証トークンをクリア後に、新規にアクセス トークンを取得・確認します。
 
 | 設定項目 | 値 |
 | --------------- | -------------- |
 | TENANT_ID　| ディレクトリ (テナント) ID `GUID` |
 | API_APP_ID　| アプリケーション (クライアント) ID `GUID` |
+
 ```powershell
 $tenantId = "TENANT_ID"
 $apiAppId = "API_APP_ID"
 $scope = "api://$apiAppId/Claude.Invoke"
+
+# キャッシュされた認証トークンをクリア
+az account clear
 
 # 組織アカウントでサインイン
 az login --tenant $tenantId --scope $scope --allow-no-subscriptions
@@ -256,10 +262,6 @@ echo $token
 ```powershell
 # Bearer が付いている場合は除去し、JWT を分割
 $jwtParts = (([string]$token).Trim() -replace '^Bearer\s+', '').Split('.')
-
-if ($jwtParts.Count -ne 3) {
-    throw '$token に JWT 形式のアクセストークンを設定してください。'
-}
 
 # ペイロードの Base64URL を通常の Base64 に変換
 $payloadBase64 = $jwtParts[1].Replace('-', '+').Replace('_', '/')
@@ -286,40 +288,43 @@ $claims | ConvertTo-Json -Depth 20
 
 ### 2. API Management ポータルでのテスト機能による検証
 
+API Management ポータルのテスト機能でバックエンドを呼び出せるか確認する事で、Claude Code の設定の問題か API Mangament の問題かを切り分け出来る。
+
+![ポータルでのテスト](/images/015.png)
+
+| HTTP ヘッダ | 値 |
+| --------------- | -------------- |
+| anthropic-version　| `2023-06-01` |
+| Content-Type　| `application/json` |
+| Authorization　| $token の値 (Bearer は省略可能)|
+
+**Request body**
+```json
+{
+  "model": "claude-sonnet-5",
+  "system": "You are a helpful assistant",
+  "messages": [
+    { "role": "user", "content": "How are you?" }
+  ],
+  "max_tokens": 1024
+}
+```
 
 ### 3. Claude Code 検証用の環境設定
 
-
+Claude Code のユーザー設定 `%USERPROFILE%\.claude\settings.json` をせずに、環境変数を設定して動作検証をする。
 
 ```powershell
-$tenantId = "TENANT_ID"
-$apiAppId = "API_APP_ID"
-$scope = "api://$apiAppId/Claude.Invoke"
-
-# 組織アカウントでサインイン
-az login --tenant $tenantId --scope $scope --allow-no-subscriptions
-
-# APIM用アクセストークンを取得
-$token = az account get-access-token `
-    --tenant $tenantId `
-    --scope $scope `
-    --query accessToken `
-    --output tsv `
-    --only-show-errors
-
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) {
-    throw "アクセストークンを取得できませんでした。"
-}
-
-# APIM経由でFoundryを利用
+# API Management 経由で Foundry モデルにアクセス
 $env:CLAUDE_CODE_USE_FOUNDRY = "1"
 $env:ANTHROPIC_FOUNDRY_RESOURCE = $null
 $env:ANTHROPIC_FOUNDRY_API_KEY = $null
-$env:ANTHROPIC_FOUNDRY_BASE_URL = "https://<API Management>.azure-api.net/<API Name>anthropic"
+$env:ANTHROPIC_FOUNDRY_BASE_URL = "https://<API_Management>.azure-api.net/<API_Name>/anthropic"
 $env:ANTHROPIC_FOUNDRY_AUTH_TOKEN = $token.Trim()
 
 $env:ANTHROPIC_DEFAULT_SONNET_MODEL = "<Sonnetのデプロイ名>"
 $env:ANTHROPIC_DEFAULT_OPUS_MODEL = "<Opusのデプロイ名>"
 
+# Claude Code の起動
 claude
 ```
