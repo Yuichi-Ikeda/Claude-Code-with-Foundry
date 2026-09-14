@@ -3,7 +3,7 @@
 ## はじめに
 
 1. 開発者個人が Claude Code から直接 Microsoft Foundry モデルを利用したい場合は [Anthropic 社の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) の手順で比較的容易に出来ます。
-2. ここでは、法人としての利用を前提に `IT 基盤部が全社導入する` 際に必要となる認証やトレーサビリティの機能を [API Gateway](https://azure.microsoft.com/ja-jp/products/api-management) によって実現する方法を紹介します。
+2. ここでは、法人としての利用を前提に `IT 基盤部が全社導入する` 際に必要となる認証やトレーサビリティの機能を [Azure API Management](https://azure.microsoft.com/ja-jp/products/api-management) によって実現する方法を紹介します。
 
 ## 概要
 
@@ -13,12 +13,12 @@
 sequenceDiagram
     participant PC as 開発者 PC
     participant E as Entra ID
-    participant A as API Gateway
+    participant A as API Management
     participant F as Foundry
 
     PC->>E: ユーザーでサインイン
-    E-->>PC: API Gateway 用アクセストークン
-    PC->>A: Claudeの要求と API Gateway 用トークン
+    E-->>PC: API Management 用アクセストークン
+    PC->>A: Claudeの要求と API Management 用トークン
     A->>A: トークンと利用権限を検証
     A->>E: マネージドIDでトークン取得
     E-->>A: Foundry用アクセストークン
@@ -34,7 +34,7 @@ sequenceDiagram
 > [!NOTE]
 > 本資料は 2026-09-14 時点のポータル画面を元に作成されています。画面や選択肢は更新されることがあります。表記が画像と異なる場合は、同じ意味の最新の項目を選択してください。将来的には bicep による IaC コードの提供を予定しています。
 
-## Entra ID に API Gateway 認証用のアプリケーションを登録する
+## Entra ID に API Management 認証用のアプリケーションを登録する
 
 ### 1. Entra ID に認証用`アプリの登録`
 
@@ -66,8 +66,8 @@ sequenceDiagram
 | 設定項目 | 設定例 |
 | --------------- | -------------- |
 | スコープ名 | `Claude.Invoke` |
-| 管理者の同意の表示名 | `API Gateway 経由で Claude モデルを利用する` |
-| 管理者の同意の説明 | `サインインしたユーザーに代わって、API Gateway 経由で Microsoft Foundry 上の Claude モデルを呼び出すことをアプリケーションに許可します。` |
+| 管理者の同意の表示名 | `API Management 経由で Claude モデルを利用する` |
+| 管理者の同意の説明 | `サインインしたユーザーに代わって、API Management 経由で Microsoft Foundry 上の Claude モデルを呼び出すことをアプリケーションに許可します。` |
 
 ### 4. API の公開 - クライアント アプリケーションの追加
 
@@ -96,13 +96,13 @@ Azure CLI を認証クライアントとして使うため、API の公開画面
 
 ![ユーザーとグループの追加](/images/009.png)
 
-`Claude.User` ロールに Entra ID のグループやユーザーを割り当てます。これらのグループやユーザーが API Gateway 経由で Foundry モデルを利用できます。
+`Claude.User` ロールに Entra ID のグループやユーザーを割り当てます。これらのグループやユーザーが API Management 経由で Foundry モデルを利用できます。
 
 ![ユーザーとグループの追加](/images/010.png)
 
 参考資料：[アプリ ロールを追加してトークンで受け取る](https://learn.microsoft.com/entra/identity-platform/howto-add-app-roles-in-apps)
 
-## API Gateway に Anthropic API をインポートし構成する
+## API Management に Anthropic API をインポートし構成する
 
 ### 1. 以下の手順に従い、Anthropic API をインポートします。
 
@@ -111,11 +111,11 @@ Azure CLI を認証クライアントとして使うため、API の公開画面
 > [!NOTE]
 > Microsoft Foundry 側で Claude モデルのデプロイが事前にされている事が前提です。本資料ではその部分は省略しています。
 
-### 2. API Gateway で開発者（エンドユーザー）の Entra ID 認証トークンを検証
+### 2. API Management で開発者（エンドユーザー）の Entra ID 認証トークンを検証
 
 ![inboundポリシーを設定](/images/011.png)
 
-**API Gateway で開発者（エンドユーザー）の Entra ID 認証トークンを検証**します。対象 API の `inbound` に、次のようなポリシーを設定します。
+**API Management で開発者（エンドユーザー）の Entra ID 認証トークンを検証**します。対象 API の `inbound` に、次のようなポリシーを設定します。
 
 ```xml
 <inbound>
@@ -162,7 +162,7 @@ Azure CLI を認証クライアントとして使うため、API の公開画面
 
 Foundry モデルへのバックエンド認証は、手順 2-1. Microsoft Foundry API をインポートする作業で自動的に設定されていますが、マニュアルで設定する場合は AI Gateway のシステム割り当てマネージド ID を有効化し、対象 Foundry リソースに `Foundry User` などの呼び出し権限を付与する必要があります。
 
-参考資料：[API Gateway を使用して LLM API へのアクセスを認証および承認する](https://learn.microsoft.com/azure/api-management/api-management-authenticate-authorize-ai-apis#authenticate-with-managed-identity)
+参考資料：[API Management を使用して LLM API へのアクセスを認証および承認する](https://learn.microsoft.com/azure/api-management/api-management-authenticate-authorize-ai-apis#authenticate-with-managed-identity)
 
 ### 3. 既定のキー（サブスクリプションキー）認証の削除
 
@@ -184,7 +184,7 @@ Entra ID 認証と既存のキー認証（サブスクリプションキー）�
 {
   "apiKeyHelper": "az account get-access-token --tenant TENANT_ID --scope api://API_APP_ID/Claude.Invoke --query accessToken --output tsv --only-show-errors",
   "env": {
-    "ANTHROPIC_BASE_URL": "https://<API Gateway>.azure-api.net/<API Name>anthropic",
+    "ANTHROPIC_BASE_URL": "https://<API Management>.azure-api.net/<API Name>anthropic",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "<Sonnet のデプロイ名>",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "<Opus のデプロイ名>",
     "CLAUDE_CODE_API_KEY_HELPER_TTL_MS": "240000"
@@ -196,7 +196,7 @@ Entra ID 認証と既存のキー認証（サブスクリプションキー）�
 | --------------- | -------------- |
 | TENANT_ID　| ディレクトリ (テナント) ID `GUID` |
 | API_APP_ID　| アプリケーション (クライアント) ID `GUID` |
-| API Gateway | 以下の画像の URL 参照 |
+| API Management | 以下の画像の URL 参照 |
 | API Name | 以下の画像の URL 参照 |
 
 ![ANTHROPIC_BASE_URL](/images/013.png)
@@ -284,7 +284,7 @@ $claims | ConvertTo-Json -Depth 20
 }
 ```
 
-### 2. API Gateway ポータルでのテスト機能による検証
+### 2. API Management ポータルでのテスト機能による検証
 
 
 ### 3. Claude Code 検証用の環境設定
@@ -315,7 +315,7 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) {
 $env:CLAUDE_CODE_USE_FOUNDRY = "1"
 $env:ANTHROPIC_FOUNDRY_RESOURCE = $null
 $env:ANTHROPIC_FOUNDRY_API_KEY = $null
-$env:ANTHROPIC_FOUNDRY_BASE_URL = "https://<API Gateway>.azure-api.net/<API Name>anthropic"
+$env:ANTHROPIC_FOUNDRY_BASE_URL = "https://<API Management>.azure-api.net/<API Name>anthropic"
 $env:ANTHROPIC_FOUNDRY_AUTH_TOKEN = $token.Trim()
 
 $env:ANTHROPIC_DEFAULT_SONNET_MODEL = "<Sonnetのデプロイ名>"
