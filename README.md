@@ -2,12 +2,12 @@
 
 ## はじめに
 
-1. 個人で Claude Code から直接 Microsoft Foundry モデルを利用する方法は、[Anthropic 社の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) に沿って構成すれば簡単に出来ます。
-2. ここでは、法人としての利用を前提に `IT 基盤部が全社導入する` 際に必要となる認証やトレーサビリティの機能を [API Gateway](https://azure.microsoft.com/ja-jp/products/api-management) によって実装する方法を紹介します。
+1. 開発者個人が Claude Code から直接 Microsoft Foundry モデルを利用したい場合は [Anthropic 社の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) の手順で簡単に出来ます。
+2. ここでは、法人としての利用を前提に `IT 基盤部が全社導入する` 際に必要となる認証やトレーサビリティの機能を [API Gateway](https://azure.microsoft.com/ja-jp/products/api-management) によって実現する方法を紹介します。
 
 ## 概要
 
-本資料のシステム構成を導入する事で、社内のユーザーは、開発端末のコンソールで `az login` コマンドで Entra ID 認証後に、`claude` コマンドを実行するだけで Claude Code を利用できます。
+本資料のシステム構成を導入する事で、社内のユーザーは、開発端末のコンソールで初回に一度だけ `az login` コマンドで Entra ID 認証をすれば、その後は `claude` コマンドを実行するだけで Claude Code が利用できるようになります。
 
 ```mermaid
 sequenceDiagram
