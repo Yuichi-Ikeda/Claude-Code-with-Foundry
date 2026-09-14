@@ -2,7 +2,7 @@
 
 ## はじめに
 
-1. 開発者個人が Claude Code から直接 Microsoft Foundry モデルを利用したい場合は [Anthropic 社の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) の手順で比較的容易に出来ます。
+1. 開発者個人が Claude Code から直接 Microsoft Foundry モデルを利用したい場合は [Anthropic 社のドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) の手順で比較的容易に出来ます。
 2. ここでは、法人としての利用を前提に `IT 基盤部が全社導入する` 際に必要となる認証やトレーサビリティの機能を [Azure API Management](https://azure.microsoft.com/ja-jp/products/api-management) によって実現する方法を紹介します。
 
 ## 概要
