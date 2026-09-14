@@ -36,7 +36,7 @@ sequenceDiagram
 
 ## 1. Entra ID に API Gateway 認証用のアプリケーションを登録する
 
-### 1-1. Entra ID に認証用`アプリの登録`
+### 1. Entra ID に認証用`アプリの登録`
 
 ![アプリの登録](/images/001.png)
 
@@ -46,7 +46,7 @@ sequenceDiagram
 | サポートされているアカウントの種類 | `シングル テナントのみ` |
 | リダイレクト URI (省略可能) | 省略します |
 
-### 1-2. 以下 2 つの ID 値を控えておきます。
+### 2. 以下 2 つの ID 値を控えておきます。
 
 ![claude-gateway-api](/images/002.png)
 
@@ -55,7 +55,7 @@ sequenceDiagram
 | アプリケーション (クライアント) ID | `GUID` |
 | ディレクトリ (テナント) ID | `GUID` |
 
-### 1-3. API の公開 - Scope の追加
+### 3. API の公開 - Scope の追加
 
 参考資料：[Web API を公開するようにアプリケーションを構成する](https://learn.microsoft.com/entra/identity-platform/quickstart-configure-app-expose-web-apis)
 
@@ -69,13 +69,13 @@ sequenceDiagram
 | 管理者の同意の表示名 | `API Gateway 経由で Claude モデルを利用する` |
 | 管理者の同意の説明 | `サインインしたユーザーに代わって、API Gateway 経由で Microsoft Foundry 上の Claude モデルを呼び出すことをアプリケーションに許可します。` |
 
-### 1-4. API の公開 - クライアント アプリケーションの追加
+### 4. API の公開 - クライアント アプリケーションの追加
 
 Azure CLI を認証クライアントとして使うため、API の公開画面にある **「承認済みのクライアント アプリケーション」** で、Azure CLI のクライアント ID `04b07795-8ddb-461a-bbee-02f9e1bf7b46` と `Claude.Invoke` を事前承認します。
 
 ![クライアント アプリケーションの追加](/images/005.png)
 
-### 1-5. アプリ ロールの作成
+### 5. アプリ ロールの作成
 
 アプリロールとして `Claude.User` ロールを作成します。
 
@@ -104,12 +104,12 @@ Azure CLI を認証クライアントとして使うため、API の公開画面
 
 ## 2. API Gateway に Anthropic API をインポート
 
-### 2-1. [ポータルを使用して Microsoft Foundry API をインポートする](https://learn.microsoft.com/ja-jp/azure/api-management/azure-ai-foundry-api#import-microsoft-foundry-api-by-using-the-portal) の手順に従い、Anthropic API のインポートを実施します。
+### 1. [ポータルを使用して Microsoft Foundry API をインポートする](https://learn.microsoft.com/ja-jp/azure/api-management/azure-ai-foundry-api#import-microsoft-foundry-api-by-using-the-portal) の手順に従い、Anthropic API のインポートを実施します。
 
 > [!NOTE]
 > Microsoft Foundry 側で Claude モデルのデプロイが事前にされている事が前提です。本資料ではその部分は省略しています。
 
-### 2-2. API Gateway で開発者（エンドユーザー）の Entra ID 認証トークンを検証
+### 2. API Gateway で開発者（エンドユーザー）の Entra ID 認証トークンを検証
 
 ![inboundポリシーを設定](/images/011.png)
 
@@ -162,19 +162,19 @@ Foundry モデルへのバックエンド認証は、手順 2-1. Microsoft Found
 
 参考資料：[API Gateway を使用して LLM API へのアクセスを認証および承認する](https://learn.microsoft.com/azure/api-management/api-management-authenticate-authorize-ai-apis#authenticate-with-managed-identity)
 
-### 2-3. 既定のキー（サブスクリプションキー）認証の削除
+### 3. 既定のキー（サブスクリプションキー）認証の削除
 
 Entra ID 認証と既存のキー認証（サブスクリプションキー）を両方併用する事も可能ですが、ここでは、**Entra ID 認証だけで利用させる前提** で、対象 API の「Subscription required」を無効にします。[APIM のサブスクリプション設定](https://learn.microsoft.com/azure/api-management/api-management-subscriptions#enable-or-disable-subscription-requirement-for-api-or-product-access)
 
 ![既定のキー認証の削除](/images/012.png)
 
-### 2-4. AI Gateway による LLM トークン、ユーザー要求、応答のロギング
+### 4. AI Gateway による LLM トークン、ユーザー要求、応答のロギング
 
 必要に応じて、[言語モデル API の要求または応答のログ記録を有効](https://learn.microsoft.com/ja-jp/azure/api-management/api-management-howto-llm-logs#enable-logging-of-requests-or-responses-for-language-model-api) にし、LLM トークン、ユーザー要求、応答をロギングします。これにより各ユーザーの利用状況などを集計・監査可能となります。
 
 ## 3. 開発者（エンドユーザー）の PC で Claude Code を設定
 
-### 3-1. Claude Code の設定
+### 1. Claude Code の設定
 
 開発者（エンドユーザー）の PC で Claude Code のユーザー設定 `%USERPROFILE%\.claude\settings.json` で以下を追加します。
 
@@ -207,7 +207,7 @@ az account get-access-token が返すアクセス トークンは 60 ～ 90 分�
 
 なお Entra ID テナントで MFA や条件付きアクセスによる一定期間の対話ログインやパスワード変更を要求している場合は、90日間を待たずに利用者はその間隔で再度 `az login` を行う必要があります。
 
-### 3-2. Claude Code の起動
+### 2. Claude Code の起動
 
 `az login` は、初回に 1 回だけ必要です。ユーザーが複数のテナントに所属している場合は、`az login --tenant <TENANT_ID>` で該当のテナントを指定してログインしてください。
 
@@ -222,7 +222,7 @@ claude
 
 上手く動作しなかった場合、ステップ・バイ・ステップでトラブルシューティング手法を記載します。
 
-### 4-1. アクセス トークンの取得と確認
+### 1. アクセス トークンの取得と確認
 
 以下を PowerShell で実行し、アクセス トークンを取得・確認します。
 
@@ -282,10 +282,10 @@ $claims | ConvertTo-Json -Depth 20
 }
 ```
 
-### 4-2. API Gateway ポータルでのテスト機能による検証
+### 2. API Gateway ポータルでのテスト機能による検証
 
 
-### 4-3. Claude Code 検証用の環境設定
+### 3. Claude Code 検証用の環境設定
 
 
 
