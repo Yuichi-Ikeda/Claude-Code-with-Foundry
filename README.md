@@ -2,7 +2,7 @@
 
 ## はじめに
 
-1. 開発者個人が Claude Code から直接 Microsoft Foundry モデルを利用したい場合は [Anthropic 社の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) の手順で簡単に出来ます。
+1. 開発者個人が Claude Code から直接 Microsoft Foundry モデルを利用したい場合は [Anthropic 社の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) の手順で比較的容易に出来ます。
 2. ここでは、法人としての利用を前提に `IT 基盤部が全社導入する` 際に必要となる認証やトレーサビリティの機能を [API Gateway](https://azure.microsoft.com/ja-jp/products/api-management) によって実現する方法を紹介します。
 
 ## 概要
@@ -34,7 +34,7 @@ sequenceDiagram
 > [!NOTE]
 > 本資料は 2026-09-14 時点のポータル画面を元に作成されています。画面や選択肢は更新されることがあります。表記が画像と異なる場合は、同じ意味の最新の項目を選択してください。将来的には bicep による IaC コードの提供を予定しています。
 
-## 1. Entra ID に API Gateway 認証用のアプリケーションを登録する
+## Entra ID に API Gateway 認証用のアプリケーションを登録する
 
 ### 1. Entra ID に認証用`アプリの登録`
 
@@ -102,9 +102,11 @@ Azure CLI を認証クライアントとして使うため、API の公開画面
 
 参考資料：[アプリ ロールを追加してトークンで受け取る](https://learn.microsoft.com/entra/identity-platform/howto-add-app-roles-in-apps)
 
-## 2. API Gateway に Anthropic API をインポート
+## API Gateway に Anthropic API をインポートし構成する
 
-### 1. [ポータルを使用して Microsoft Foundry API をインポートする](https://learn.microsoft.com/ja-jp/azure/api-management/azure-ai-foundry-api#import-microsoft-foundry-api-by-using-the-portal) の手順に従い、Anthropic API のインポートを実施します。
+### 1. 以下の手順に従い、Anthropic API をインポートします。
+
+[ポータルを使用して Microsoft Foundry API をインポートする](https://learn.microsoft.com/ja-jp/azure/api-management/azure-ai-foundry-api#import-microsoft-foundry-api-by-using-the-portal) 
 
 > [!NOTE]
 > Microsoft Foundry 側で Claude モデルのデプロイが事前にされている事が前提です。本資料ではその部分は省略しています。
@@ -172,7 +174,7 @@ Entra ID 認証と既存のキー認証（サブスクリプションキー）�
 
 必要に応じて、[言語モデル API の要求または応答のログ記録を有効](https://learn.microsoft.com/ja-jp/azure/api-management/api-management-howto-llm-logs#enable-logging-of-requests-or-responses-for-language-model-api) にし、LLM トークン、ユーザー要求、応答をロギングします。これにより各ユーザーの利用状況などを集計・監査可能となります。
 
-## 3. 開発者（エンドユーザー）の PC で Claude Code を設定
+## 開発者（エンドユーザー）の PC で Claude Code を設定
 
 ### 1. Claude Code の設定
 
@@ -218,7 +220,7 @@ claude
 
 ![Claude Code](/images/014.png)
 
-## 4. トラブルシューティング
+## トラブルシューティング
 
 上手く動作しなかった場合、ステップ・バイ・ステップでトラブルシューティング手法を記載します。
 
