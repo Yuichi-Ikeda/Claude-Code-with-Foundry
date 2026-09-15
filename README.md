@@ -2,7 +2,7 @@
 
 ## はじめに
 
-開発者個人が Claude Code から Microsoft Foundry の Claude モデルを直接利用する場合は、[Anthropic の公式ドキュメント](https://code.claude.com/docs/ja/microsoft-foundry) を参照してください。
+開発者個人が Claude Code から Microsoft Foundry の Claude モデルを直接利用する場合は、[Microsoft の公式ドキュメント](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/configure-claude-code) を参照してください。
 
 本資料は、**IT 基盤部門による組織への導入**を想定しています。[Azure API Management](https://azure.microsoft.com/ja-jp/products/api-management)（以下、APIM）を AI Gateway として利用し、ユーザー認証と利用権限の制御を行う構成、および利用状況を監査する際の注意点を紹介します。
 
@@ -258,7 +258,11 @@ Entra ID 認証と APIM のサブスクリプション キーは併用できま�
 
 ## 3. 開発者 PC の設定
 
-### 3.1. Claude Code のユーザー設定を追加する
+### 3.1. Claude Code をインストールする
+
+Claude Code が未インストールの場合は、[公式のインストール手順](https://code.claude.com/docs/ja/quickstart#step-1-install-claude-code) に従ってインストールしてください。
+
+### 3.2. Claude Code のユーザー設定を追加する
 
 本資料では、Claude Code の **汎用 LLM Gateway 接続**と `apiKeyHelper` を使用します。Foundry への直接接続モードとは異なるため、`CLAUDE_CODE_USE_FOUNDRY` や `ANTHROPIC_FOUNDRY_*` は設定しません。既存のプロバイダー設定や、固定値の `ANTHROPIC_AUTH_TOKEN`・`ANTHROPIC_API_KEY` が残っていないことを確認してください。
 
@@ -292,7 +296,7 @@ Entra ID 認証と APIM のサブスクリプション キーは併用できま�
 
 小規模なバックグラウンド処理でも利用可能なモデルを指定してください。Haiku をデプロイしていない場合は、`ANTHROPIC_DEFAULT_HAIKU_MODEL` に利用可能な Sonnet のデプロイ名などを設定できますが、そのモデルの料金と性能が適用されます。Opus を利用する場合も、対応するデプロイが必要です。
 
-### 3.2. トークンのキャッシュと再サインイン
+### 3.3. トークンのキャッシュと再サインイン
 
 `CLAUDE_CODE_API_KEY_HELPER_TTL_MS` は、[apiKeyHelper の出力をキャッシュする期間](https://code.claude.com/docs/en/llm-gateway-connect#rotate-credentials-with-apikeyhelper) です。この例の `240000` ミリ秒は **240 秒（4 分）** に相当し、キャッシュの期限が切れた後、必要に応じてヘルパーを再実行します。
 
@@ -302,7 +306,7 @@ Azure CLI は有効なキャッシュを再利用し、必要に応じてトー�
 
 リフレッシュ トークンの既定の有効期間は多くのシナリオで 90 日ですが、条件付きアクセスのサインイン頻度、管理者によるセッションの失効などで、それより前に再サインインが必要になる場合があります。詳細は [リフレッシュ トークンの有効期間と失効](https://learn.microsoft.com/entra/identity-platform/refresh-tokens) を参照してください。
 
-### 3.3. サインインして Claude Code を起動する
+### 3.4. サインインして Claude Code を起動する
 
 初回、または再認証が必要になったときに、設定した API のテナントとスコープを指定してサインインします。`--allow-no-subscriptions` は、Azure サブスクリプションへの権限がない利用者もサインインできるようにする指定です。アプリ ロールの割り当ては別途必要です。
 
