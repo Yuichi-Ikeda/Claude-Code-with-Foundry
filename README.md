@@ -193,6 +193,10 @@ Claude Code が使うのは **Anthropic Messages API** です。インポート�
     <!-- インポート時に作成されたバックエンドを指定 -->
     <set-backend-service id="apim-generated-policy" backend-id="FOUNDRY_BACKEND_ID" />
 </inbound>
+<backend>
+    <!-- ストリーミング応答を利用するため応答バッファを無効にします -->
+    <forward-request buffer-response="false" />
+</backend>
 ```
 
 `TENANT_ID`、`CLI_APP_ID`、`API_APP_ID`、`FOUNDRY_BACKEND_ID` を以下の値に置き換えます。2 か所ある `API_APP_ID` には同じ GUID を設定してください。
@@ -241,9 +245,9 @@ Entra ID 認証と APIM のサブスクリプション キーは併用できま�
 2. 対象 API の診断設定で、必要な範囲のプロンプト・応答の記録を有効にします。
 3. 利用者別の監査が必要な場合は、検証済みの `callerJwt` から取得した `tid` と `oid` を要求 ID と関連付けて APIM 側に記録する処理を追加します。
 
-**LLM ログを有効にするだけでは、Entra ID ユーザー別の集計は完成しません。** Foundry が認識する呼び出し元は APIM のマネージド ID です。この README の認証ポリシーには、ユーザー ID をログへ記録する処理は含まれていません。未検証のクライアント指定ヘッダーを利用者の識別根拠にしないでください。
+**LLM ログを有効にするだけでは、Entra ID ユーザー別の集計は完成しません。** Foundry が認識する呼び出し元は APIM のマネージド ID です。この README の認証ポリシーには、ユーザー ID (oid) をログへ記録する処理は含まれていません。必要に応じて認証トークン中の oid, name, preferred_username(UPN) 等のユーザー識別情報をログへ記録してください。
 
-利用するゲートウェイで Anthropic Messages API のトークン使用量やストリーミング応答が期待どおり記録されるか、実際のログで確認してください。公式の LLM ログ手順はチャット補完 API を前提としており、すべての Claude API 操作の記録を保証するものではありません。ストリームの中断やログのサイズ上限により、記録が欠ける場合もあります。
+利用するゲートウェイで Anthropic Messages API のトークン使用量やストリーミング応答が期待どおり記録されるか、実際のログで確認してください。
 
 > [!WARNING]
 > プロンプトや応答にはソースコード・機密情報・個人情報が含まれる可能性があります。保存対象、保持期間、閲覧権限、マスキング方針を事前に定めてください。`Authorization` やキー用ヘッダーに含まれる認証情報はログへ記録しないでください。
