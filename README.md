@@ -146,15 +146,16 @@ Claude Code が使うのは **Anthropic Messages API** です。インポート�
 > [!NOTE]
 > インポート画面で提供される API の種類は更新されます。参照先は Foundry API 全般の手順であり、Anthropic の操作が自動作成されることを保証するものではありません。不足する場合は、[Claude の API 仕様](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/claude-models#api-overview) に従って操作とバックエンドへのルーティングを追加してください。
 
-ストリーミング応答を利用するため、対象 API の **All operations** からポリシー エディターを開き、`backend` セクションで適用される `forward-request` に `buffer-response="false"` を設定します。`base` で上位スコープから継承している場合は、継承元を含む有効なポリシーを確認してください。既定値は `true` です。詳細は [forward-request ポリシー](https://learn.microsoft.com/azure/api-management/forward-request-policy) を参照してください。
-
-操作単位のポリシーがある場合は、API 全体の認証ポリシーを継承する `inbound` の `base` を削除しないでください。
-
 ### 2.2. ユーザーのアクセス トークンを検証する
 
-![All operations の inbound ポリシーを設定](images/011.png)
+対象 API の **All operations** にある **inbound processing** からポリシー エディターを開きます。
 
-対象 API の **All operations** にある `inbound` で、開発者の Entra ID アクセス トークンを検証します。以下は `inbound` 部分の例です。インポート時に生成されたバックエンド設定や、既存の `backend`・`outbound`・`on-error` は保持してください。
+![All operations のポリシーを設定](images/011.png)
+
+以下は `inbound` と  `backend` 部分の例です。
+
+- `inbound` で、開発者の Entra ID アクセス トークンを検証します。
+- ストリーミング応答を利用するため、`backend` セクションで適用される `forward-request` に `buffer-response="false"` を設定します。既定値は `true` です。詳細は [forward-request ポリシー](https://learn.microsoft.com/azure/api-management/forward-request-policy) を参照してください。
 
 ```xml
 <inbound>
@@ -187,6 +188,7 @@ Claude Code が使うのは **Anthropic Messages API** です。インポート�
         </required-claims>
     </validate-azure-ad-token>
 
+    <!-- 不要なキー情報が送信されている場合は削除します -->
     <set-header name="x-api-key" exists-action="delete" />
     <set-header name="api-key" exists-action="delete" />
 
