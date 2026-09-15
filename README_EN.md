@@ -258,9 +258,10 @@ Verify with real logs that the gateway you use records Anthropic Messages API to
 
 ## 3. Configure the developer PC
 
-### 3.1. Install Claude Code
+### 3.1. Install the Azure CLI and Claude Code
 
-If Claude Code is not installed, install it by following the [official installation instructions](https://code.claude.com/docs/en/quickstart#step-1-install-claude-code).
+- If the Azure CLI is not installed, install it by following the [official installation instructions](https://learn.microsoft.com/cli/azure/install-azure-cli).
+- If Claude Code is not installed, install it by following the [official installation instructions](https://code.claude.com/docs/en/quickstart#step-1-install-claude-code).
 
 ### 3.2. Add the Claude Code user settings
 

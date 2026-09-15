@@ -258,9 +258,10 @@ Entra ID 認証と APIM のサブスクリプション キーは併用できま�
 
 ## 3. 開発者 PC の設定
 
-### 3.1. Claude Code をインストールする
+### 3.1. Azure CLI と Claude Code をインストールする
 
-Claude Code が未インストールの場合は、[公式のインストール手順](https://code.claude.com/docs/ja/quickstart#step-1-install-claude-code) に従ってインストールしてください。
+- Azure CLI が未インストールの場合は、[公式のインストール手順](https://learn.microsoft.com/ja-jp/cli/azure/install-azure-cli) に従ってインストールしてください。
+- Claude Code が未インストールの場合は、[公式のインストール手順](https://code.claude.com/docs/ja/quickstart#step-1-install-claude-code) に従ってインストールしてください。
 
 ### 3.2. Claude Code のユーザー設定を追加する
 
