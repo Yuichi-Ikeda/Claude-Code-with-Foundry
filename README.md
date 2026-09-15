@@ -152,7 +152,7 @@ Claude Code が使うのは **Anthropic Messages API** です。インポート�
 
 ![All operations のポリシーを設定](images/011.png)
 
-以下は `inbound` と  `backend` 部分の例です。
+以下は `inbound` と `backend` 部分の例です。`outbound` と `on-error` は既存の内容を保持してください。
 
 - `inbound` で、開発者の Entra ID アクセス トークンを検証します。
 - ストリーミング応答を利用するため、`backend` セクションで適用される `forward-request` に `buffer-response="false"` を設定します。既定値は `true` です。詳細は [forward-request ポリシー](https://learn.microsoft.com/azure/api-management/forward-request-policy) を参照してください。
@@ -204,7 +204,7 @@ Claude Code が使うのは **Anthropic Messages API** です。インポート�
 `TENANT_ID`、`CLI_APP_ID`、`API_APP_ID`、`FOUNDRY_BACKEND_ID` を以下の値に置き換えます。2 か所ある `API_APP_ID` には同じ GUID を設定してください。
 
 | 設定項目 | 値 |
-| --------------- | -------------- |
+| --- | --- |
 | `TENANT_ID` | ディレクトリ (テナント) ID |
 | `CLI_APP_ID` | Azure CLI のクライアント ID: `04b07795-8ddb-461a-bbee-02f9e1bf7b46` |
 | `API_APP_ID` | 認証用アプリのアプリケーション (クライアント) ID |
@@ -247,7 +247,9 @@ Entra ID 認証と APIM のサブスクリプション キーは併用できま�
 2. 対象 API の診断設定で、必要な範囲のプロンプト・応答の記録を有効にします。
 3. 利用者別の監査が必要な場合は、検証済みの `callerJwt` から取得した `tid` と `oid` を要求 ID と関連付けて APIM 側に記録する処理を追加します。
 
-**LLM ログを有効にするだけでは、Entra ID ユーザー別の集計は完成しません。** Foundry が認識する呼び出し元は APIM のマネージド ID です。この README の認証ポリシーには、ユーザー ID (oid) をログへ記録する処理は含まれていません。必要に応じて認証トークン中の oid, name, preferred_username(UPN) 等のユーザー識別情報をログへ記録してください。
+**LLM ログを有効にするだけでは、Entra ID ユーザー別の集計は完成しません。** Foundry が認識する呼び出し元は APIM のマネージド ID です。この README の認証ポリシーには、ユーザー ID をログへ記録する処理は含まれていません。必要に応じて、検証済みの `callerJwt` から取得した識別情報を記録してください。
+
+集計キーには、変更されない `oid` と `tid` の組み合わせを使用します。ユーザー名は変更される可能性があるため表示用途にとどめ、クレーム名はトークンのバージョンによって異なります（v1.0 は `upn`、v2.0 は `preferred_username`）。含まれるクレームは要求したスコープなどによっても変わるため、手順 4.1 で実際のトークンを確認してください。
 
 利用するゲートウェイで Anthropic Messages API のトークン使用量やストリーミング応答が期待どおり記録されるか、実際のログで確認してください。
 
@@ -340,7 +342,7 @@ az logout
 
 az login --tenant $tenantId --scope $scope --allow-no-subscriptions
 if ($LASTEXITCODE -ne 0) {
-        throw "Azure CLI へのサインインに失敗しました。"
+    throw "Azure CLI へのサインインに失敗しました。"
 }
 
 $token = az account get-access-token `
@@ -374,7 +376,7 @@ $claims = [System.Text.Encoding]::UTF8.GetString(
     [System.Convert]::FromBase64String($payloadBase64)
 ) | ConvertFrom-Json
 
-$claims | Select-Object ver, aud, tid, azp, appid, scp, roles, exp | ConvertTo-Json -Depth 20
+$claims | ConvertTo-Json -Depth 20
 ```
 
 以下の内容が含まれることを確認します。`aud` は `API_APP_ID` または設定済みのアプリケーション ID URI、`scp` は `Claude.Invoke` を含む文字列です。
