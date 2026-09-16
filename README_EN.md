@@ -309,10 +309,10 @@ The default refresh token lifetime is 90 days in many scenarios, but Conditional
 
 ### 3.4. Sign in and start Claude Code
 
-On the first run, or whenever re-authentication is required, sign in specifying the tenant and scope of the API you configured. `--allow-no-subscriptions` allows users without permissions on any Azure subscription to sign in. The app role assignment is still required separately.
+On the first run, or whenever re-authentication is required, sign in specifying the tenant of the API you configured. `--allow-no-subscriptions` allows users without permissions on any Azure subscription to sign in. The user must still be assigned the Entra ID app role.
 
 ```powershell
-az login --tenant TENANT_ID --scope api://API_APP_ID/Claude.Invoke --allow-no-subscriptions
+az login --tenant TENANT_ID --allow-no-subscriptions
 ```
 
 Once sign-in succeeds, start Claude Code in your working directory. From then on, as long as the sign-in state is valid, this command alone is enough.

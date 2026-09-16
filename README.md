@@ -309,10 +309,10 @@ Azure CLI は有効なキャッシュを再利用し、必要に応じてトー�
 
 ### 3.4. サインインして Claude Code を起動する
 
-初回、または再認証が必要になったときに、設定した API のテナントとスコープを指定してサインインします。`--allow-no-subscriptions` は、Azure サブスクリプションへの権限がない利用者もサインインできるようにする指定です。アプリ ロールの割り当ては別途必要です。
+初回、または再認証が必要になったときに、設定した API のテナントを指定してサインインします。`--allow-no-subscriptions` は、Azure サブスクリプションへの権限がない利用者もサインインできるようにする指定です。ユーザーの Entra ID アプリ ロールへの割り当ては必要です。
 
 ```powershell
-az login --tenant TENANT_ID --scope api://API_APP_ID/Claude.Invoke --allow-no-subscriptions
+az login --tenant TENANT_ID --allow-no-subscriptions
 ```
 
 サインインに成功したら、作業対象のディレクトリで起動します。次回以降、サインイン状態が有効であれば、このコマンドだけで利用できます。
