@@ -361,6 +361,7 @@ if ($subscriptionKey.Length -eq 0) {
 $env:CLAUDE_CODE_USE_FOUNDRY = $null
 $env:CLAUDE_CODE_USE_BEDROCK = $null
 $env:CLAUDE_CODE_USE_VERTEX = $null
+$env:CLAUDE_CODE_DISABLE_ADVISOR_TOOL = "1"
 $env:ANTHROPIC_CUSTOM_HEADERS = $null
 $env:ANTHROPIC_AUTH_TOKEN = $null
 $env:ANTHROPIC_BASE_URL = "https://<APIM_NAME>.azure-api.net/<API_URL_SUFFIX>/anthropic"
