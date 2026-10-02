@@ -30,3 +30,7 @@ Claude Code が各要求に付けるサブスクリプション キー（`ANTHRO
 
 > [!TIP]
 > 組織への導入では、ユーザー単位の識別と権限制御ができるパターン 2 を基本に検討してください。チームや用途ごとに上限や接続先を分ける必要がある場合はパターン 3、ユーザー単位の識別が不要な検証用途であればパターン 1 を選択します。
+
+## 利用状況の監視
+
+[カスタムメトリックによる LLM トークン使用量の監視](LLM_Logging.md) では、APIM の [llm-emit-token-metric ポリシー](https://learn.microsoft.com/azure/api-management/llm-emit-token-metric-policy) を使って、Claude モデルのトークン使用量を Application Insights にカスタムメトリックとして記録します。記録したデータは、Entra ID のユーザー（UPN）とモデルごとに KQL で集計できます。ユーザーの識別には APIM で検証したアクセス トークンを使うため、認証パターン 2 または 3 の構成が前提です。
