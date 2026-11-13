@@ -47,7 +47,7 @@ Claude Code 向けの [手順 3.2](APIM_Entra_ID_KEY.md#32-claude-code-のユー
 
 | 用途 | Claude Code | Claude Desktop（本資料） |
 | --- | --- | --- |
-| 設定する場所 | `%USERPROFILE%\.claude\settings.json` | サードパーティ推論の構成画面 |
+| 設定する場所 | `%USERPROFILE%\.claude\settings.json` | ［サードパーティ推論の設定］画面 |
 | APIM の URL | `ANTHROPIC_BASE_URL` | ゲートウェイ ベース URL |
 | Entra ID トークンの取得 | `apiKeyHelper` | 認証ヘルパーが返す `token` |
 | サブスクリプション キーの送信 | `ANTHROPIC_CUSTOM_HEADERS` | 認証ヘルパーが返す `headers` |
@@ -224,7 +224,7 @@ HasKeyValue : True
 
 1. Claude Desktop を起動します。Anthropic アカウントでサインインしたり、アカウントを作成したりしないでください。
 2. ［ヘルプ］→［トラブルシューティング］→［開発者モードを有効にする］を選択します。Windows では、サインイン画面の左上にあるアプリケーション メニュー（☰）から［ヘルプ］を開きます。
-3. ［開発者］→［サードパーティ推論を構成する］を選択し、構成画面を開きます。
+3. ［開発者］→［サードパーティ推論を構成する］を選択し、［サードパーティ推論の設定］画面を開きます。
 4. 左側のサイドバーで［接続］を選択します。
 
 画面の開き方と設定の適用手順は、[Microsoft Learn の Claude Desktop 設定手順](https://learn.microsoft.com/ja-jp/azure/foundry/foundry-models/how-to/configure-claude-desktop) も参考にしてください。Microsoft Learn の手順は Foundry に直接接続する構成のため、［接続］の設定値は本資料の手順 3.2 以降に従います。
@@ -298,17 +298,19 @@ TTL は、ヘルパーが返すトークンの残存有効期間に応じて調�
 
 ［接続］の［モデルリスト］に、APIM が要求本文の `model` として受け付ける **完全なモデル ID** を手動で登録します。本資料の構成では、APIM は要求本文をそのまま Foundry に転送するため、**Foundry のデプロイ名** を指定します。モデルリストの **先頭のモデルが既定** になります。
 
-| 設定内容（構成キー） | 設定値 |
+| 画面の項目（構成キー） | 設定値 |
 | --- | --- |
-| モデル ID（`name`） | 必須。Foundry のデプロイ名（画面例: `claude-sonnet-5`、`claude-opus-5-5`） |
-| 表示名（`labelOverride`） | 任意。モデルの選択画面に表示する名前。空欄の場合は ID から自動で整形されます |
-| 1M コンテキスト（`supports1m`、`prefer1m`） | 任意。デプロイが 100 万トークンのコンテキストを受け付ける場合だけ有効にします |
-| ティア（`anthropicFamilyTier`、`isFamilyDefault`） | 任意。このモデルが代わりを務める Claude のティア（`sonnet`、`opus` など）と、同じティアのモデルが複数ある場合の既定 |
-| 対応する Claude モデル（`behavesAs`） | 任意。アプリが識別できない ID の場合に、対応する Claude モデルの ID を指定します |
-| 最大エフォート（`maxEffort`） | 任意。このモデルで選択できる最も高いエフォート レベル |
+| ［モデル ID］（`name`） | 必須。Foundry のデプロイ名（画面例: `claude-sonnet-5`、`claude-opus-5-5`） |
+| ［表示名］（`labelOverride`） | 任意。モデル選択画面に表示する名前。空欄の場合は ID から自動で整形されます |
+| ［1M コンテキストバリアントを提供］（`supports1m`） | 任意。デプロイが 100 万トークンのコンテキストを受け付ける場合だけオンにします |
+| ［1M オプションのみを表示］（`prefer1m`） | 任意。1M のオプションだけを表示し、常に 1M を要求します |
+| ［ティアエイリアス］（`anthropicFamilyTier`） | 任意。このモデルが代わりを務める Claude のティア（`sonnet`、`opus` など） |
+| ［ティアのデフォルト］（`isFamilyDefault`） | 任意。同じティアのモデルが複数ある場合に、このモデルを既定にします |
+| ［この ID に対応する Claude モデル］（`behavesAs`） | 任意。アプリが識別できない ID の場合に、対応する Claude モデルの ID を指定します |
+| ［最大エフォート］（`maxEffort`） | 任意。このモデルで選択できる最も高いエフォート レベル |
 
 > [!NOTE]
-> モデルリストの各項目の表示名は、アプリのバージョンや表示言語によって異なる場合があります。括弧内は [構成リファレンス](https://claude.com/docs/third-party/claude-desktop/configuration#inferencemodels) の構成キーです。
+> 画面の項目名は、アプリのバージョンや表示言語によって異なる場合があります。括弧内は [構成リファレンス](https://claude.com/docs/third-party/claude-desktop/configuration#inferencemodels) の構成キーです。
 
 - `claude-sonnet-5` と `claude-opus-5-5` は画面の例です。実際に Foundry にデプロイしたデプロイ名を、APIM の `model` に指定する値と完全に一致させて登録します。モデルの表示名ではありません。
 - 既定にしたいモデルを 1 件目に登録し、2 件目以降に他のモデルを追加します。
