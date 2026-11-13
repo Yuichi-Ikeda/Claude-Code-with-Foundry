@@ -70,14 +70,14 @@ sequenceDiagram
 
 あわせて、管理者から次の値を入手します。本資料のコード例では、それぞれ次のプレースホルダーで記載しています。
 
-| 値 | プレースホルダー |
+| プレースホルダー | 値 |
 | --- | --- |
-| ディレクトリ (テナント) ID | `TENANT_ID` |
-| `Claude.Invoke` を公開した認証用アプリのアプリケーション (クライアント) ID | `API_APP_ID` |
-| APIM サブスクリプション キー（Primary key または Secondary key） | `<APIM_SUBSCRIPTION_KEY>` |
-| APIM のサービス名 | `<APIM_NAME>` |
-| 対象 API の API URL suffix | `<API_URL_SUFFIX>` |
-| 利用する Foundry のデプロイ名 | `<Sonnet のデプロイ名>` など |
+| `TENANT_ID` | 既存手順書の手順 1.2 で控えたディレクトリ (テナント) ID |
+| `API_APP_ID` | 既存手順書の手順 1.2 で控えた、`Claude.Invoke` を公開した認証用アプリのアプリケーション (クライアント) ID |
+| `<APIM_SUBSCRIPTION_KEY>` | 既存手順書の手順 2.3 で配布された APIM の Primary key または Secondary key。Foundry の API キーではありません |
+| `<APIM_NAME>` | APIM のサービス名。独自ドメインの場合はホスト名全体を変更 |
+| `<API_URL_SUFFIX>` | 対象 API の **API URL suffix**。API の `Name` や表示名ではありません |
+| `<Sonnet のデプロイ名>` など | Foundry に実在するデプロイ名。モデルの表示名ではありません |
 
 ### 1.2. Azure CLI でサインインする
 
@@ -220,6 +220,9 @@ Remove-Variable output, credential -ErrorAction SilentlyContinue
 > [!WARNING]
 > ヘルパーを `& $helper` や `.\claude-apim-helper.ps1` のように、開いている PowerShell の中で直接実行しないでください。ヘルパーは標準出力に直接書き込むため、トークンとサブスクリプション キーがそのまま画面に表示されます。
 
+> [!NOTE]
+> 本資料のヘルパーと PowerShell の確認コマンドは、ダミーの認証情報と模擬の Azure CLI・APIM を使い、Linux 上の PowerShell 7 で動作を確認しています。Windows PowerShell 5.1 や Windows 版 Claude Desktop での動作、Azure 上での認証とトークン更新は、利用環境で確認してください。
+
 ## 3. Claude Desktop の接続とモデルの設定
 
 ### 3.1. サードパーティ推論の設定画面を開く
@@ -272,7 +275,7 @@ APIM ポータルで対象 API の **Settings** を開き、**Base URL** を確�
 
 ![APIM の Base URL と API URL suffix](images/013.png)
 
-ベース URL に `/v1` や `/v1/messages` を含めないでください。APIM の操作のパスを変更した場合は、`/v1/messages` を除いた部分をベース URL の末尾に合わせます。
+ベース URL に `/v1` や `/v1/messages` を含めたり、`/anthropic` を重複させたりしないでください。APIM の操作のパスを変更した場合は、`/v1/messages` を除いた部分をベース URL の末尾に合わせます。
 
 #### ゲートウェイ認証スキーム
 
@@ -427,13 +430,13 @@ catch {
 | ヘルパーが失敗し、`az` が認識されない旨のメッセージが表示される | Azure CLI がインストールされ、Claude Desktop を使う Windows ユーザーの PATH に含まれているか。インストール直後の場合は、Claude Desktop を完全に終了してから起動し直します |
 | ヘルパーが失敗し、スクリプトの実行が無効になっている旨のメッセージが表示される | PowerShell の実行ポリシー（`Get-ExecutionPolicy -List` で確認）。組織のポリシーに従って、ヘルパーを実行できるようにします |
 | ヘルパーがタイムアウトする | Entra ID（`login.microsoftonline.com`）に接続できるか。プロキシ環境では Azure CLI のプロキシ設定も確認します。必要に応じて［認証情報ヘルパーのタイムアウト］を延ばします |
-| `401` と `subscription key` を含むメッセージ（`Access denied due to missing subscription key` など） | **APIM サブスクリプション キー**: ヘルパーの `$subscriptionKey` が配布されたキーと一致し、サブスクリプションの状態が Active か。キーがローテーションされていないか。対象 API の **Subscription required** が想定どおりか（既存手順書の [手順 2.3](APIM_Entra_ID_KEY.md#23-サブスクリプション-キーを必須にし利用者へ配布する)） |
-| `401`（`Unauthorized`） | **トークンの検証**: トークンのテナント、`aud`、`scp`（`Claude.Invoke`）が APIM ポリシーの値と一致するか。既存手順書の [手順 4.1](APIM_Entra_ID_KEY.md#41-アクセス-トークンを取得しクレームを確認する) でクレームを確認します<br>**`Claude.User` ロール**: トークンの `roles` に `Claude.User` が含まれているか。ロールを割り当てた直後の場合は、時間をおいてトークンを取り直します |
-| `403` | **Foundry 側の権限**: APIM のマネージド ID に、Foundry リソースの **Cognitive Services User** ロールが付与されているか（既存手順書の手順 2.1） |
+| `401` と `subscription key` を含むメッセージ（`Access denied due to missing subscription key` など） | **APIM サブスクリプション キー**: ヘルパーの `$subscriptionKey` が配布されたキーと一致するか。キーが再生成されていないか。サブスクリプションの Scope が対象 API を含み、状態が Active か。APIM の **Header name** が `Ocp-Apim-Subscription-Key` か（既存手順書の [手順 2.3](APIM_Entra_ID_KEY.md#23-サブスクリプション-キーを必須にし利用者へ配布する)） |
+| `401`（`Unauthorized`） | **トークンの検証**: トークンのテナント、`aud`、`scp`（`Claude.Invoke`）、クライアント ID（Azure CLI）、有効期限が APIM ポリシーの値と一致するか。既存手順書の [手順 4.1](APIM_Entra_ID_KEY.md#41-アクセス-トークンを取得しクレームを確認する) でクレームを確認します<br>**`Claude.User` ロール**: トークンの `roles` に `Claude.User` が含まれているか。既存手順書のポリシー例では、ロール不足も `401` になります。ロールの割り当てを変更しても発行済みのトークンには反映されないため、必要に応じて `az logout` と `az login` でサインインし直します |
+| 上記以外の `401`、または `403` | **Foundry 側の権限**: APIM のマネージド ID と Foundry リソースへの RBAC 割り当て（`Foundry User` など）、トークンの宛先、ネットワーク制限（既存手順書の [手順 2.2](APIM_Entra_ID_KEY.md#22-ユーザーのアクセス-トークンを検証する)）。利用者個人に Foundry リソースの権限は必要ありません |
 | `404`（`Resource not found` など） | **ベース URL**: ［ゲートウェイ ベース URL］が `https://<APIM_NAME>.azure-api.net/<API_URL_SUFFIX>/anthropic` の形式か。`/v1` を含めていないか、API URL suffix と操作のパスが APIM の設定と一致するか（[手順 3.2](#32-接続先と認証情報を設定する)） |
 | `404`、`400` などでモデルやデプロイが見つからない旨のメッセージが表示される | **モデル ID**: モデルリストの ID が、Foundry に実在するデプロイ名と完全に一致するか。表示名ではなく［モデル ID］を確認します（[手順 3.4](#34-モデルリストを登録する)） |
-| 1M コンテキストや特定のエフォート レベルを選んだときだけ失敗する | 対象のデプロイが、その設定に対応しているか。対応していない場合は、モデルリストの該当する設定をオフにするか変更します |
-| 接続テストは成功するが、応答が途中で止まる | APIM のポリシーで応答をバッファリングせず、ストリーミング応答を中継できるか（既存手順書の手順 2.5 のログ設定を参照） |
+| 1M コンテキストや特定のエフォート レベルを選んだときだけ失敗する（`400` など） | 対象のデプロイが、その設定に対応しているか。対応していない場合は、モデルリストの該当する設定をオフにするか変更します |
+| 応答が最後まで表示されない | APIM の `forward-request` に `buffer-response="false"` が設定されているか（既存手順書の [手順 2.2](APIM_Entra_ID_KEY.md#22-ユーザーのアクセス-トークンを検証する)）、タイムアウト、途中のプロキシ |
 
 接続テストのエラーだけでは原因が分からない場合は、［ヘルプ］→［トラブルシューティング］から診断レポートを生成し、推論プロバイダーの設定の状態や、ヘルパーが標準エラー出力に書き込んだメッセージを確認します。
 
